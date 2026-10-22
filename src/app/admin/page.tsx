@@ -89,11 +89,21 @@ export default function AdminPortalPage() {
     }
   }, []);
 
-  // Easter Egg Listener: Ketik "elzein" di halaman mana saja untuk membuka bantuan super admin
+  // Easter Egg Listener: Ketik "elzein" di keyboard secara berurutan (hanya di luar kolom input)
   useEffect(() => {
     if (isAuthenticated) return;
     let keyBuffer = '';
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Abaikan jika sedang mengetik di kolom input atau textarea form
+      const target = e.target as HTMLElement | null;
+      const isInputField =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable);
+
+      if (isInputField) return;
+
       if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
         keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-20);
         if (keyBuffer.includes('elzein')) {
@@ -123,14 +133,6 @@ export default function AdminPortalPage() {
 
     const trimmedEmail = loginEmail.trim().toLowerCase();
     const trimmedPassword = loginPassword.trim();
-
-    // Easter Egg trigger via form submit
-    if (trimmedEmail === 'elzein' || trimmedPassword.toLowerCase() === 'elzein') {
-      setEasterEggActive(true);
-      setLoginError(null);
-      setIsSubmittingAuth(false);
-      return;
-    }
 
     const validAdmins: Record<string, { role: AdminRole; pass: string }> = {
       'admin@octo.id': { role: 'Super Admin', pass: 'AdminOCTO2026!' },
@@ -340,16 +342,10 @@ export default function AdminPortalPage() {
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
-                  type="text"
+                  type="email"
                   required
                   value={loginEmail}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setLoginEmail(val);
-                    if (val.toLowerCase().includes('elzein')) {
-                      setEasterEggActive(true);
-                    }
-                  }}
+                  onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="admin@octo.id"
                   className="w-full pl-10 pr-3.5 py-2.5 bg-[#0B132B] border border-[#1E3A5F] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00AFC4] transition"
                 />
@@ -366,13 +362,7 @@ export default function AdminPortalPage() {
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={loginPassword}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setLoginPassword(val);
-                    if (val.toLowerCase().includes('elzein')) {
-                      setEasterEggActive(true);
-                    }
-                  }}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••••••"
                   className="w-full pl-10 pr-10 py-2.5 bg-[#0B132B] border border-[#1E3A5F] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00AFC4] transition"
                 />
