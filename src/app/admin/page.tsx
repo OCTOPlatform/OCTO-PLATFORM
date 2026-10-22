@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useOcto } from '@/lib/store';
 import {
@@ -27,6 +27,7 @@ import {
   Plus,
   Edit,
   Eye,
+  EyeOff,
   Trash2,
   MessageSquare,
   Sparkles,
@@ -34,6 +35,10 @@ import {
   Calendar,
   AlertCircle,
   ExternalLink,
+  Lock,
+  LogOut,
+  Mail,
+  KeyRound,
 } from 'lucide-react';
 
 export default function AdminPortalPage() {
@@ -50,12 +55,134 @@ export default function AdminPortalPage() {
     addResource,
     updateResource,
     auditLogs,
+    logAuditAction,
     analyticsEvents,
     currentRole,
     setCurrentRole,
   } = useOcto();
 
   const [activeTab, setActiveTab] = useState<'leads' | 'products' | 'cms' | 'audit' | 'analytics'>('leads');
+
+  // Internal Authentication Gate
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
+  const [loginEmail, setLoginEmail] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isSubmittingAuth, setIsSubmittingAuth] = useState<boolean>(false);
+  const [easterEggActive, setEasterEggActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      const session = sessionStorage.getItem('octo_admin_session');
+      if (session) {
+        const parsed = JSON.parse(session);
+        if (parsed?.authenticated) {
+          setIsAuthenticated(true);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  }, []);
+
+  // Easter Egg Listener: Ketik "elzein" di halaman mana saja untuk membuka bantuan super admin
+  useEffect(() => {
+    if (isAuthenticated) return;
+    let keyBuffer = '';
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-20);
+        if (keyBuffer.includes('elzein')) {
+          setEasterEggActive(true);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (easterEggActive) {
+      setTimeout(() => {
+        const el = document.getElementById('octo-easter-egg-panel');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
+  }, [easterEggActive]);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    setIsSubmittingAuth(true);
+
+    const trimmedEmail = loginEmail.trim().toLowerCase();
+    const trimmedPassword = loginPassword.trim();
+
+    // Easter Egg trigger via form submit
+    if (trimmedEmail === 'elzein' || trimmedPassword.toLowerCase() === 'elzein') {
+      setEasterEggActive(true);
+      setLoginError(null);
+      setIsSubmittingAuth(false);
+      return;
+    }
+
+    const validAdmins: Record<string, { role: AdminRole; pass: string }> = {
+      'admin@octo.id': { role: 'Super Admin', pass: 'AdminOCTO2026!' },
+      'egichandrapratama@gmail.com': { role: 'Super Admin', pass: 'AdminOCTO2026!' },
+      'ops@octo.id': { role: 'Admin', pass: 'OpsOCTO2026!' },
+      'sales@octo.id': { role: 'Sales/Lead Manager', pass: 'SalesOCTO2026!' },
+      'editor@octo.id': { role: 'Editor/Approver', pass: 'EditorOCTO2026!' },
+    };
+
+    setTimeout(() => {
+      const match = validAdmins[trimmedEmail];
+      if (match && match.pass === trimmedPassword) {
+        setIsAuthenticated(true);
+        setCurrentRole(match.role);
+        try {
+          sessionStorage.setItem(
+            'octo_admin_session',
+            JSON.stringify({
+              authenticated: true,
+              email: trimmedEmail,
+              role: match.role,
+              loggedInAt: new Date().toISOString(),
+            })
+          );
+        } catch {
+          // ignore
+        }
+        logAuditAction('ADMIN_LOGIN', `Admin login berhasil dengan email ${trimmedEmail} (Peran: ${match.role})`);
+      } else {
+        setLoginError('Kredensial tidak valid. Akses ditolak hanya untuk personel internal berwenang.');
+      }
+      setIsSubmittingAuth(false);
+    }, 400);
+  };
+
+  const handleLogout = () => {
+    try {
+      sessionStorage.removeItem('octo_admin_session');
+    } catch {
+      // ignore
+    }
+    setIsAuthenticated(false);
+    setLoginEmail('');
+    setLoginPassword('');
+    logAuditAction('ADMIN_LOGOUT', `Sesi admin diakhiri`);
+  };
+
+  const handlePrefillDemo = (email: string, pass: string) => {
+    setLoginEmail(email);
+    setLoginPassword(pass);
+    setLoginError(null);
+  };
 
   // Leads filter & search state
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>('all');
@@ -158,6 +285,203 @@ export default function AdminPortalPage() {
     });
   };
 
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen bg-[#0B132B] text-white flex flex-col items-center justify-center p-4">
+        <div className="w-10 h-10 border-2 border-[#00AFC4] border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-xs text-slate-400 font-mono">Memeriksa otorisasi sesi admin...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0B132B] via-[#0F172A] to-[#050C1A] text-white flex flex-col justify-center items-center p-4 sm:p-6 py-12 sm:py-16 relative overflow-y-auto">
+        {/* Glow Ambient Lights */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="w-full max-w-md bg-[#0D1B2D]/90 backdrop-blur-xl border border-[#1E3A5F] rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#00AFC4]/15 border border-[#00AFC4]/30 text-[#00AFC4] mb-1">
+              <Lock className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-black text-white tracking-tight">
+              OCTO Admin Portal
+            </h1>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+              Akses terbatas untuk pengelolaan konten CMS, status lini produk, dan tindak lanjut lead klien resmi.
+            </p>
+          </div>
+
+          {/* Security Advisory */}
+          <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-xl text-[11px] text-amber-200 flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              Halaman ini bukan untuk umum. Seluruh riwayat percobaan akses dicatat secara terpusat dalam sistem audit internal.
+            </p>
+          </div>
+
+          {/* Error Message */}
+          {loginError && (
+            <div className="p-3 bg-rose-950/50 border border-rose-500/40 rounded-xl text-xs text-rose-300 flex items-center gap-2 animate-in fade-in duration-150">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <span>{loginError}</span>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Email Administrator
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  value={loginEmail}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setLoginEmail(val);
+                    if (val.toLowerCase().includes('elzein')) {
+                      setEasterEggActive(true);
+                    }
+                  }}
+                  placeholder="admin@octo.id"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-[#0B132B] border border-[#1E3A5F] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00AFC4] transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Kata Sandi Otorisasi
+              </label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={loginPassword}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setLoginPassword(val);
+                    if (val.toLowerCase().includes('elzein')) {
+                      setEasterEggActive(true);
+                    }
+                  }}
+                  placeholder="••••••••••••"
+                  className="w-full pl-10 pr-10 py-2.5 bg-[#0B132B] border border-[#1E3A5F] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00AFC4] transition"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="cursor-pointer text-slate-400 hover:text-white absolute right-3 top-1/2 -translate-y-1/2 p-1"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmittingAuth}
+              className="w-full py-2.5 px-4 bg-[#00AFC4] hover:bg-cyan-300 active:bg-cyan-400 text-[#142740] font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isSubmittingAuth ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-[#142740] border-t-transparent rounded-full animate-spin" />
+                  <span>Mengautentikasi...</span>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Verifikasi & Masuk Portal</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Easter Egg: Bantuan Akun Internal Terdaftar (Super Admin) via kata kunci "elzein" */}
+          {easterEggActive && (
+            <div id="octo-easter-egg-panel" className="pt-3 border-t border-cyan-500/30 text-[11px] text-slate-300 space-y-2.5 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                  <span>Easter Egg Terbuka: Kredensial Super Admin</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEasterEggActive(false)}
+                  className="text-[10px] text-slate-400 hover:text-white transition cursor-pointer"
+                  title="Sembunyikan"
+                >
+                  ✕ Sembunyikan
+                </button>
+              </div>
+
+              <div className="p-3 bg-[#081726] rounded-xl border border-cyan-500/30 font-mono text-[10px] space-y-2.5 text-slate-300 shadow-xl">
+                <div className="text-[10px] uppercase tracking-wider text-cyan-400 font-sans font-bold flex items-center justify-between">
+                  <span>Akun Internal Terdaftar (Super Admin)</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800">
+                    Keyword: elzein
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 font-sans">
+                  <div className="flex items-center justify-between gap-2 p-2 bg-[#0D1B2D] rounded-lg border border-[#1E3A5F]">
+                    <div>
+                      <div className="text-[9px] text-slate-400">Super Admin Utama</div>
+                      <div className="text-[#00AFC4] font-semibold text-[11px] font-mono">admin@octo.id</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handlePrefillDemo('admin@octo.id', 'AdminOCTO2026!')}
+                      className="px-2.5 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-[10px] rounded-lg font-medium transition cursor-pointer"
+                    >
+                      Gunakan Akun
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 p-2 bg-[#0D1B2D] rounded-lg border border-[#1E3A5F]">
+                    <div>
+                      <div className="text-[9px] text-slate-400">Super Admin Founder</div>
+                      <div className="text-[#00AFC4] font-semibold text-[11px] font-mono">egichandrapratama@gmail.com</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handlePrefillDemo('egichandrapratama@gmail.com', 'AdminOCTO2026!')}
+                      className="px-2.5 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-[10px] rounded-lg font-medium transition cursor-pointer"
+                    >
+                      Gunakan Akun
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-[10px] text-slate-400 border-t border-[#1E3A5F]/70 flex items-center justify-between font-sans">
+                  <span>Password Otorisasi:</span>
+                  <span className="text-cyan-300 font-mono font-bold tracking-wider">AdminOCTO2026!</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="text-center pt-1">
+            <Link
+              href="/"
+              className="text-xs text-slate-400 hover:text-[#00AFC4] transition inline-flex items-center gap-1.5"
+            >
+              ← Kembali ke Beranda Publik OCTO
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFBFC] pb-24 text-[#142740]">
       {/* Admin Top Header & Role Switcher */}
@@ -180,21 +504,33 @@ export default function AdminPortalPage() {
             </div>
           </div>
 
-          {/* Interactive Role Switcher for Demonstrating RBAC */}
-          <div className="flex items-center gap-2 bg-[#0D1B2D] px-3 py-1.5 rounded-xl border border-[#1E3A5F]">
-            <Users className="w-4 h-4 text-[#00AFC4]" />
-            <span className="text-xs text-slate-300 font-medium">Peran Aktif:</span>
-            <select
-              value={currentRole}
-              onChange={(e) => setCurrentRole(e.target.value as AdminRole)}
-              className="text-xs font-bold text-[#00AFC4] bg-transparent border-none focus:outline-none cursor-pointer"
+          {/* Interactive Role Switcher & Logout Button */}
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 bg-[#0D1B2D] px-3 py-1.5 rounded-xl border border-[#1E3A5F]">
+              <Users className="w-4 h-4 text-[#00AFC4]" />
+              <span className="text-xs text-slate-300 font-medium">Peran:</span>
+              <select
+                value={currentRole}
+                onChange={(e) => setCurrentRole(e.target.value as AdminRole)}
+                className="text-xs font-bold text-[#00AFC4] bg-transparent border-none focus:outline-none cursor-pointer"
+              >
+                <option value="Super Admin">Super Admin (Akses Penuh)</option>
+                <option value="Admin">Admin (Konten & Lead)</option>
+                <option value="Editor/Approver">Editor/Approver (Review & Publish)</option>
+                <option value="Author">Author (Hanya Tulis Draf)</option>
+                <option value="Sales/Lead Manager">Sales/Lead Manager (Khusus CRM)</option>
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="px-3 py-1.5 text-xs font-semibold bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 hover:text-white rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+              title="Keluar dari sesi admin"
             >
-              <option value="Super Admin">Super Admin (Akses Penuh)</option>
-              <option value="Admin">Admin (Konten & Lead)</option>
-              <option value="Editor/Approver">Editor/Approver (Review & Publish)</option>
-              <option value="Author">Author (Hanya Tulis Draf)</option>
-              <option value="Sales/Lead Manager">Sales/Lead Manager (Khusus CRM)</option>
-            </select>
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Keluar</span>
+            </button>
           </div>
         </div>
 

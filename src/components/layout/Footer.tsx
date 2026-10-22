@@ -289,9 +289,6 @@ export default function Footer() {
             <Link href="/cookies" className="hover:text-slate-200 transition">
               Cookie
             </Link>
-            <Link href="/admin" className="text-[#00AFC4] hover:underline flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> Admin Portal
-            </Link>
           </div>
         </div>
       </div>

@@ -22,7 +22,7 @@ import {
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { products, currentRole } = useOcto();
+  const { products } = useOcto();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productDropdownOpen, setProductDropdownOpen] = useState(false);
   const [solutionDropdownOpen, setSolutionDropdownOpen] = useState(false);
@@ -48,22 +48,15 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E1E7EC] transition-all">
-      {/* Top Banner - Subtle brand proof & admin quick switcher notice */}
+      {/* Top Banner - Brand statement */}
       <div className="bg-[#142740] text-xs text-slate-300 py-1.5 px-4 text-center flex items-center justify-between">
         <div className="hidden md:flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
           <span className="text-white font-medium">OCTO Ecosystem 2026</span>
           <span className="text-slate-400">• ONE PLATFORM. MANY POSSIBILITIES.</span>
         </div>
-        <div className="flex items-center justify-center w-full md:w-auto gap-4">
+        <div className="flex items-center justify-center w-full md:w-auto">
           <span className="text-slate-300">Smart business tools, connected.</span>
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 bg-[#00AFC4]/20 hover:bg-[#00AFC4]/30 text-[#00AFC4] px-2 py-0.5 rounded text-[11px] font-semibold transition"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Portal CMS & CRM ({currentRole})
-          </Link>
         </div>
       </div>
 
@@ -354,13 +347,6 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Kontak Kami
-              </Link>
-              <Link
-                href="/admin"
-                className="p-2 rounded-md bg-[#E8F8FA] text-[#00AFC4] font-semibold flex items-center gap-1"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <ShieldCheck className="w-4 h-4" /> Admin Portal
               </Link>
             </div>
           </div>

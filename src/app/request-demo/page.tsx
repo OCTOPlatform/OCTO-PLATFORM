@@ -111,16 +111,18 @@ function RequestDemoContent() {
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/"
-              className="w-full sm:w-auto px-6 py-2.5 text-xs font-bold text-white bg-[#00AFC4] hover:bg-[#0098AB] rounded-xl transition"
+              className="w-full sm:w-auto px-6 py-2.5 text-xs font-bold text-white bg-[#00AFC4] hover:bg-[#0098AB] rounded-xl transition text-center"
             >
               Kembali ke Beranda
             </Link>
-            <Link
-              href="/admin"
+            <a
+              href="https://wa.me/6281295099738?text=Halo%20tim%20OCTO,%20saya%20sudah%20mengirimkan%20permintaan%20demo%20di%20website"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full sm:w-auto px-6 py-2.5 text-xs font-semibold text-[#142740] bg-[#F2F5F7] hover:bg-[#E1E7EC] border border-[#E1E7EC] rounded-xl transition flex items-center justify-center gap-1.5"
             >
-              <ShieldCheck className="w-4 h-4 text-[#00AFC4]" /> Lihat di Lead CRM Admin
-            </Link>
+              Hubungi via WhatsApp
+            </a>
           </div>
         </div>
       ) : (
