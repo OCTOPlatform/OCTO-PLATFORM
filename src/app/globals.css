@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-octo-navy: #142740;
+  --color-octo-navy-light: #1e3a5f;
+  --color-octo-navy-dark: #0d1b2d;
+  --color-octo-cyan: #00afc4;
+  --color-octo-cyan-hover: #0098ab;
+  --color-octo-cyan-soft: #e8f8fa;
+  --color-octo-bg: #fafbfc;
+  --color-octo-surface: #f2f5f7;
+  --color-octo-text-muted: #586779;
+  --color-octo-border: #e1e7ec;
+}
+
+:root {
+  --background: #fafbfc;
+  --foreground: #142740;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Accessible focus styling */
+:focus-visible {
+  outline: 2px solid #00afc4;
+  outline-offset: 2px;
+}
+
+/* Ensure buttons display pointer cursor */
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
