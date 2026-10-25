@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   ArrowRight,
   ShieldCheck,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function ContactPage() {
@@ -26,28 +28,76 @@ export default function ContactPage() {
     consentGiven: false,
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.consentGiven) {
       alert('Harap setujui persetujuan privasi.');
       return;
     }
 
-    addLead({
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      companyName: '-',
-      companySize: '-',
-      productInterest: 'general',
-      formType: 'contact',
-      message: `Subjek: ${formData.subject}\nPesan: ${formData.message}`,
-      consentGiven: true,
-      utmSource: 'contact_page',
-    });
+    try {
+      setSubmitting(true);
+      setErrorMessage(null);
 
-    setSubmitted(true);
+      // Konfigurasi endpoint & workspace ID dari Environment Variables
+      const crmApiUrl = process.env.NEXT_PUBLIC_CRM_API_URL || 'http://localhost:8080/api/v1';
+      const crmWorkspaceId = process.env.NEXT_PUBLIC_CRM_WORKSPACE_ID || '0c700000-0000-0000-0000-000000000000';
+
+      // 1. Kirim prospek secara atomik ke backend OCTO-CRM via Inbound Lead Intake API
+      const payload = {
+        full_name: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        company_name: '-',
+        product_interest: formData.subject.trim() || 'General Inquiry',
+        form_type: 'Website Contact Form',
+        message: `Subjek: ${formData.subject}\nPesan: ${formData.message}`,
+        consent_given: true,
+        utm_source: 'octo_web_contact',
+        utm_campaign: 'website_inbound',
+      };
+
+      try {
+        const response = await fetch(`${crmApiUrl}/workspaces/${crmWorkspaceId}/integrations/lead-intake`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => null);
+          console.warn('OCTO-CRM intake API responded with non-200 status:', errData);
+        }
+      } catch (networkErr) {
+        console.warn('Gagal menghubungi backend OCTO-CRM (offline / network error), tetap mencatat ke local store:', networkErr);
+      }
+
+      // 2. Simpan juga ke local store OCTO-WEB agar audit lead & demo web tetap sinkron
+      addLead({
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        companyName: '-',
+        companySize: '-',
+        productInterest: formData.subject || 'general',
+        formType: 'contact',
+        message: `Subjek: ${formData.subject}\nPesan: ${formData.message}`,
+        consentGiven: true,
+        utmSource: 'contact_page',
+      });
+
+      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Terjadi kendala saat mengirimkan pesan. Silakan coba lagi.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -231,11 +281,29 @@ export default function ContactPage() {
                 </label>
               </div>
 
+              {errorMessage && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full py-3.5 text-sm font-bold text-white bg-[#00AFC4] hover:bg-[#0098AB] rounded-xl shadow-md transition flex items-center justify-center gap-2"
+                disabled={submitting}
+                className="w-full py-3.5 text-sm font-bold text-white bg-[#00AFC4] hover:bg-[#0098AB] disabled:opacity-60 disabled:cursor-not-allowed rounded-xl shadow-md transition flex items-center justify-center gap-2"
               >
-                Kirimkan Pesan Sekarang <ArrowRight className="w-4 h-4" />
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Mengirimkan Pesan ke CRM...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Kirimkan Pesan Sekarang</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           )}
