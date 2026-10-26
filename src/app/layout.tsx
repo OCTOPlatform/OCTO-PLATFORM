@@ -5,6 +5,7 @@ import { OctoProvider } from '@/lib/store';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CookieConsent from '@/components/layout/CookieConsent';
+import LiveChatWidget from '@/components/chat/LiveChatWidget';
 import { BRAND } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -66,6 +67,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
           <CookieConsent />
+          <LiveChatWidget />
         </OctoProvider>
       </body>
     </html>
