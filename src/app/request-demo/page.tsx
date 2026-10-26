@@ -116,7 +116,7 @@ function RequestDemoContent() {
               Kembali ke Beranda
             </Link>
             <a
-              href="https://wa.me/6281295099738?text=Halo%20tim%20OCTO,%20saya%20sudah%20mengirimkan%20permintaan%20demo%20di%20website"
+              href="https://wa.me/6285111357738?text=Halo%20tim%20OCTO,%20saya%20sudah%20mengirimkan%20permintaan%20demo%20di%20website"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto px-6 py-2.5 text-xs font-semibold text-[#142740] bg-[#F2F5F7] hover:bg-[#E1E7EC] border border-[#E1E7EC] rounded-xl transition flex items-center justify-center gap-1.5"
@@ -320,12 +320,12 @@ function RequestDemoContent() {
               <span className="font-bold text-[#142740] block">Butuh Jawaban Cepat Sekarang?</span>
               <p>Tim dukungan kami siap melayani pertanyaan Anda via WhatsApp langsung:</p>
               <a
-                href="https://wa.me/6281295099738"
+                href="https://wa.me/6285111357738"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 font-bold text-emerald-600 hover:underline"
               >
-                +62 812 9509 9738 (WhatsApp Bisnis) →
+                +62 851 1135 7738 (WhatsApp Bisnis) →
               </a>
             </div>
           </div>

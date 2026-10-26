@@ -38,7 +38,7 @@ export default function PartnersPage() {
             <ArrowRight className="w-4 h-4" />
           </Link>
           <a
-            href="https://wa.me/6281295099738?text=Halo%20tim%20OCTO,%20saya%20tertarik%20dengan%20program%20reseller%20mitra%20OCTO"
+            href="https://wa.me/6285111357738?text=Halo%20tim%20OCTO,%20saya%20tertarik%20dengan%20program%20reseller%20mitra%20OCTO"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full sm:w-auto px-7 py-3.5 text-sm font-semibold text-[#142740] bg-white hover:bg-[#F2F5F7] border border-[#E1E7EC] rounded-xl transition"

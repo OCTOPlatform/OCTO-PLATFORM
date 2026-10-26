@@ -43,8 +43,8 @@ export default function ShippingReturnsPage() {
         <p>
           Apabila paket diterima dalam keadaan rusak fisik akibat pengiriman (patah atau retak), laporkan dalam waktu
           3x24 jam sejak paket tiba dengan melampirkan video unboxing ke WhatsApp Customer Care OCTO di{' '}
-          <a href="https://wa.me/6281295099738" className="text-[#00AFC4] font-bold underline">
-            +62 812 9509 9738
+          <a href="https://wa.me/6285111357738" className="text-[#00AFC4] font-bold underline">
+            +62 851 1135 7738
           </a>
           . Unit pengganti akan segera diproses tanpa biaya tambahan.
         </p>

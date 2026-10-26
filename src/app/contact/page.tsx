@@ -169,15 +169,22 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#E1E7EC]">
+            <div className="pt-4 border-t border-[#E1E7EC] space-y-2">
               <a
-                href={`https://wa.me/6281295099738?text=Halo%20tim%20OCTO,%20saya%20ingin%20bertanya%20mengenai%20produk%20OCTO`}
+                href={`https://wa.me/6285111357738?text=Halo%20tim%20OCTO,%20saya%20ingin%20bertanya%20mengenai%20produk%20OCTO`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition flex items-center justify-center gap-2 shadow"
+                className="w-full py-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition flex items-center justify-center gap-2 shadow cursor-pointer"
               >
                 <MessageSquare className="w-4 h-4" /> Chat WhatsApp Resmi
               </a>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('octo:open_chat'))}
+                className="w-full py-3 text-xs font-bold text-[#00AFC4] bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 rounded-xl transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4 text-[#00AFC4]" /> Buka Live Chat di Website
+              </button>
             </div>
           </div>
         </div>

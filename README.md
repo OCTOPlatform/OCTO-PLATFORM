@@ -222,7 +222,7 @@ npm run lint
   Jl. H. Husin No. 5, Kalimulya, Cilodong, Kota Depok, Jawa Barat 16413
 - **Email Kontak (Aktif Sementara)**: [`egichandrapratama@gmail.com`](mailto:egichandrapratama@gmail.com)  
   *(Email domain resmi `halo@octo.id` sedang dalam masa pemeliharaan)*
-- **Telepon / WhatsApp**: [+62 812 9509 9738](https://wa.me/6281295099738)
+- **Telepon / WhatsApp**: [+62 851 1135 7738](https://wa.me/6285111357738)
 - **Jam Layanan**: Senin – Jumat, 09.00 – 18.00 WIB
 
 ---

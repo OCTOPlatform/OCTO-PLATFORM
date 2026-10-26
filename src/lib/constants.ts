@@ -10,8 +10,8 @@ export const BRAND = {
   officialEmail: 'egichandrapratama@gmail.com',
   domainEmail: 'halo@octo.id',
   domainEmailActive: false,
-  officialPhone: '+62 812 9509 9738',
-  officialWhatsApp: '+62 812 9509 9738',
+  officialPhone: '+62 851 1135 7738',
+  officialWhatsApp: '+62 851 1135 7738',
   operatingHours: 'Senin – Jumat, 09.00 – 18.00 WIB',
   socials: {
     instagram: 'https://instagram.com/octo_platform',
