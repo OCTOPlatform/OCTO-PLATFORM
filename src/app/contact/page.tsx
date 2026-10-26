@@ -24,6 +24,7 @@ export default function ContactPage() {
     email: '',
     phone: '',
     subject: '',
+    customSubject: '',
     message: '',
     consentGiven: false,
   });
@@ -42,6 +43,14 @@ export default function ContactPage() {
       setSubmitting(true);
       setErrorMessage(null);
 
+      // Tentukan subjek efektif (jika pilih 'Other', gunakan input kustom)
+      const effectiveSubject =
+        formData.subject === 'Other'
+          ? formData.customSubject.trim()
+            ? `Other - ${formData.customSubject.trim()}`
+            : 'Other'
+          : formData.subject;
+
       // Konfigurasi endpoint & workspace ID dari Environment Variables
       const crmApiUrl = process.env.NEXT_PUBLIC_CRM_API_URL || 'http://localhost:8080/api/v1';
       const crmWorkspaceId = process.env.NEXT_PUBLIC_CRM_WORKSPACE_ID || '0c700000-0000-0000-0000-000000000000';
@@ -52,9 +61,9 @@ export default function ContactPage() {
         phone: formData.phone.trim(),
         email: formData.email.trim(),
         company_name: '-',
-        product_interest: formData.subject.trim() || 'General Inquiry',
+        product_interest: effectiveSubject || 'General Inquiry',
         form_type: 'Website Contact Form',
-        message: `Subjek: ${formData.subject}\nPesan: ${formData.message}`,
+        message: `Subjek: ${effectiveSubject}\nPesan: ${formData.message}`,
         consent_given: true,
         utm_source: 'octo_web_contact',
         utm_campaign: 'website_inbound',
@@ -85,9 +94,9 @@ export default function ContactPage() {
         phone: formData.phone,
         companyName: '-',
         companySize: '-',
-        productInterest: formData.subject || 'general',
+        productInterest: effectiveSubject || 'general',
         formType: 'contact',
-        message: `Subjek: ${formData.subject}\nPesan: ${formData.message}`,
+        message: `Subjek: ${effectiveSubject}\nPesan: ${formData.message}`,
         consentGiven: true,
         utmSource: 'contact_page',
       });
@@ -202,7 +211,18 @@ export default function ContactPage() {
                 <strong>{formData.email}</strong> dalam hari kerja yang sama.
               </p>
               <button
-                onClick={() => setSubmitted(false)}
+                onClick={() => {
+                  setFormData({
+                    fullName: '',
+                    email: '',
+                    phone: '',
+                    subject: '',
+                    customSubject: '',
+                    message: '',
+                    consentGiven: false,
+                  });
+                  setSubmitted(false);
+                }}
                 className="px-6 py-2.5 text-xs font-bold text-white bg-[#00AFC4] hover:bg-[#0098AB] rounded-xl transition inline-block"
               >
                 Kirim Pesan Lain
@@ -251,16 +271,42 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">Subjek Keperluan *</label>
+                  <select
+                    required
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    className="w-full text-xs p-3 rounded-xl border border-[#E1E7EC] bg-[#FAFBFC] focus:bg-white focus:outline-none focus:border-[#00AFC4] text-slate-800 cursor-pointer"
+                  >
+                    <option value="" disabled>Pilih subjek atau topik...</option>
+                    <optgroup label="Ekosistem Produk OCTO">
+                      <option value="OCTO Tap">OCTO Tap (Review Google NFC & QR)</option>
+                      <option value="OCTO Insights">OCTO Insights (Analitik & Reputasi)</option>
+                      <option value="OCTO Loyalty">OCTO Loyalty (Program Loyalitas Digital)</option>
+                      <option value="OCTO Business">OCTO Business (Solusi Multi-Cabang)</option>
+                      <option value="OCTO CRM">OCTO CRM (Manajemen Pipeline Sales & Leads)</option>
+                      <option value="Ekosistem OCTO Terintegrasi">Ekosistem OCTO Terintegrasi (All-in-One)</option>
+                    </optgroup>
+                    <optgroup label="Kemitraan & Hal Lain">
+                      <option value="Kemitraan & Reseller">Kemitraan & Program Reseller</option>
+                      <option value="Other">Lainnya / Hal di Luar Ekosistem (Other)</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+
+              {formData.subject === 'Other' && (
+                <div className="space-y-1.5 animate-in fade-in duration-200">
+                  <label className="text-xs font-bold text-slate-700">Tuliskan Subjek / Hal Spesifik yang Ingin Ditanyakan *</label>
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: Pertanyaan Pemesanan Kartu Kustom"
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    placeholder="Contoh: Kustomisasi integrasi khusus, media inquiry, dsb."
+                    value={formData.customSubject}
+                    onChange={(e) => setFormData({ ...formData, customSubject: e.target.value })}
                     className="w-full text-xs p-3 rounded-xl border border-[#E1E7EC] bg-[#FAFBFC] focus:bg-white focus:outline-none focus:border-[#00AFC4]"
                   />
                 </div>
-              </div>
+              )}
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">Pesan / Pertanyaan Anda *</label>
